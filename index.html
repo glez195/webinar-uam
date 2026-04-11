@@ -104,7 +104,7 @@ for(let h=7;h<=21;h++){
   HORAS.push(pad(h)+":00");
   if(h<21) HORAS.push(pad(h)+":30");
 }
-const DURS = ["1 hora","1.5 horas","2 horas","2.5 horas","3 horas","3.5 horas","4 horas"];
+const DURS = ["1 hora","1.5 horas","2 horas","2.5 horas","3 horas","3.5 horas","4 horas","4.5 horas","5 horas","5.5 horas","6 horas","Mayor a 6 horas"];
 
 function pad(n){return String(n).padStart(2,"0")}
 function todayStr(){const t=new Date();return t.getFullYear()+"-"+pad(t.getMonth()+1)+"-"+pad(t.getDate())}
@@ -320,7 +320,7 @@ function renderStep3(){
   var dryCond = st.dryRun==="si"
     ? '<div class="wbr-cond">'
         +'<label class="wbr-lbl">¿Cuándo realizar la prueba?</label>'
-        +'<label class="wbr-opt'+(st.dryRunTipo==="dia"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="dia"'+(st.dryRunTipo==="dia"?" checked":"")+'>  Un día antes del evento (30 min)</label>'
+        +'<label class="wbr-opt'+(st.dryRunTipo==="dia"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="dia"'+(st.dryRunTipo==="dia"?" checked":"")+'>  Un día antes (horario por confirmar)</label>'
         +'<label class="wbr-opt'+(st.dryRunTipo==="15min"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="15min"'+(st.dryRunTipo==="15min"?" checked":"")+'>  15 minutos antes del evento</label>'
       +'</div>' : "";
 
