@@ -1,0 +1,566 @@
+<!-- ============================================================
+  BOTÓN + FORMULARIO DE WEBINAR — TODO EN UNO
+  Compatible con Zoom Custom HTML (sin SVG ni handlers en botones)
+  Pega este bloque completo antes de </body>
+  ============================================================ -->
+
+<style>
+#wbr-overlay *{box-sizing:border-box}
+#wbr-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#wbr-modal{background:#fff;border-radius:16px;width:100%;max-width:700px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+#wbr-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+#wbr-body{flex:1;overflow-y:auto;padding:1.25rem 1.25rem 0}
+#wbr-nav{padding:.875rem 1.25rem 1.25rem;border-top:1px solid #e5e7eb;flex-shrink:0}
+.wbr-card{background:#fff;border:.5px solid #e5e7eb;border-radius:12px;padding:1.1rem 1.25rem;margin-bottom:.875rem}
+.wbr-secttl{font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.wbr-lbl{display:block;font-size:12px;font-weight:500;color:#4b5563;margin-bottom:4px}
+.wbr-req::after{content:" *";color:#ef4444}
+.wbr-fld{margin-bottom:.875rem}
+.wbr-fld:last-child{margin-bottom:0}
+.wbr-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wbr-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:500px){.wbr-g2,.wbr-g3{grid-template-columns:1fr}}
+.wbr-input{width:100%;padding:8px 10px;border:.5px solid #d1d5db;border-radius:8px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit}
+.wbr-input:focus{border-color:#0E72ED;box-shadow:0 0 0 3px rgba(14,114,237,.12)}
+.wbr-textarea{min-height:70px;resize:vertical}
+.wbr-opt{display:flex;align-items:center;gap:8px;padding:8px 12px;border:.5px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:13px;color:#374151;margin-bottom:6px;transition:background .1s,border-color .1s}
+.wbr-opt:last-child{margin-bottom:0}
+.wbr-opt:hover{background:#f9fafb}
+.wbr-opt.on{border-color:#0E72ED;background:rgba(14,114,237,.06);color:#1d4ed8}
+.wbr-opt input[type=radio]{accent-color:#0E72ED;width:auto;flex-shrink:0}
+.wbr-cond{border-left:2px solid rgba(14,114,237,.35);padding-left:.875rem;margin-top:.75rem;display:none}
+.wbr-step{display:flex;align-items:flex-start}
+.wbr-stcol{display:flex;flex-direction:column;align-items:center}
+.wbr-stc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.wbr-stline{flex:1;margin-top:13px;height:1px;background:#e5e7eb}
+.wbr-stlbl{font-size:10px;color:#9ca3af;margin-top:3px;white-space:nowrap}
+.wbr-sc-done{background:#d1fae5;color:#065f46;border:.5px solid #6ee7b7}
+.wbr-sc-active{background:#0E72ED;color:#fff}
+.wbr-sc-pending{background:#f3f4f6;color:#9ca3af;border:.5px solid #e5e7eb}
+.wbr-pan-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px}
+.wbr-btn-sm{background:transparent;border:.5px solid #d1d5db;border-radius:8px;padding:7px 10px;cursor:pointer;color:#6b7280;font-size:12px;font-family:inherit}
+.wbr-btn-sm:hover{background:#f9fafb}
+.wbr-drop{border:1.5px dashed #d1d5db;border-radius:8px;padding:18px;text-align:center;cursor:pointer;color:#6b7280;font-size:13px}
+.wbr-drop:hover{background:#f9fafb}
+.wbr-drop.ok{border-color:#059669;background:#d1fae5;color:#065f46}
+.wbr-avail{padding:9px 14px;border-radius:8px;font-size:13px;margin-top:8px;border:.5px solid #e5e7eb;background:#f9fafb}
+.wbr-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.wbr-cal-h{text-align:center;font-size:10px;color:#9ca3af;padding:3px;font-weight:500}
+.wbr-cal-d{text-align:center;padding:5px 2px;border-radius:5px;font-size:12px;cursor:pointer;min-height:28px;display:flex;align-items:center;justify-content:center;color:#374151}
+.wbr-cal-d.empty,.wbr-cal-d.past{cursor:default;color:#d1d5db}
+.wbr-cal-d.free:hover{background:#f3f4f6}
+.wbr-cal-d.pA{background:#fef3c7;color:#92400e}
+.wbr-cal-d.full{background:#fee2e2;color:#991b1b}
+.wbr-cal-d.sel{background:#0E72ED!important;color:#fff!important;font-weight:600}
+.wbr-legend{display:flex;gap:14px;font-size:11px;margin-top:8px;flex-wrap:wrap;color:#6b7280}
+.wbr-legend-i{display:flex;align-items:center;gap:5px}
+.wbr-dot{width:10px;height:10px;border-radius:50%}
+.wbr-rev-row{display:flex;gap:12px;padding:7px 0;border-bottom:.5px solid #f3f4f6;font-size:13px}
+.wbr-rev-lbl{color:#6b7280;min-width:130px;flex-shrink:0}
+.wbr-rev-val{color:#111;font-weight:500}
+.wbr-folio{font-family:monospace;font-size:16px;font-weight:600;background:#f3f4f6;padding:10px 20px;border-radius:8px;display:inline-block;letter-spacing:.04em;color:#111}
+.wbr-email-prev{background:#f9fafb;border-radius:8px;padding:14px;font-size:11px;font-family:monospace;white-space:pre-wrap;line-height:1.6;margin-top:8px;color:#374151;border:.5px solid #e5e7eb}
+.wbr-badge{display:inline-flex;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.wbr-badge-ok{background:#d1fae5;color:#065f46}
+.wbr-badge-warn{background:#fef3c7;color:#92400e}
+.wbr-badge-err{background:#fee2e2;color:#991b1b}
+.wbr-info{border:.5px solid #bfdbfe;background:#eff6ff;border-radius:8px;padding:10px 14px;font-size:13px;color:#1e40af;margin-bottom:.875rem}
+.wbr-tip{font-size:11px;color:#9ca3af;margin-top:4px}
+</style>
+
+<!-- Botón flotante — sin handlers inline -->
+<button id="wbr-trigger" style="
+  position:fixed;bottom:28px;right:28px;z-index:9998;
+  background:#0E72ED;color:#fff;border:none;border-radius:12px;
+  padding:13px 20px;font-size:14px;font-weight:600;cursor:pointer;
+  box-shadow:0 4px 20px rgba(14,114,237,.45);
+  display:flex;align-items:center;gap:8px;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  transition:background .15s">
+  &#128197; Nueva solicitud de Webinar
+</button>
+
+<!-- Overlay -->
+<div id="wbr-overlay">
+  <div id="wbr-modal">
+
+    <!-- Header -->
+    <div id="wbr-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:30px;height:30px;background:#0E72ED;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0">Z</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#111">Solicitud de Webinar</div>
+          <div style="font-size:11px;color:#9ca3af">Zoom Webinars 500 &middot; 2 licencias disponibles</div>
+        </div>
+      </div>
+      <!-- Botón cerrar — sin handlers inline -->
+      <button id="wbr-close" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:24px;line-height:1;padding:4px">&#x2715;</button>
+    </div>
+
+    <!-- Stepper -->
+    <div id="wbr-stepper" style="padding:.875rem 1.25rem 0"></div>
+
+    <!-- Body -->
+    <div id="wbr-body"></div>
+
+    <!-- Nav -->
+    <div id="wbr-nav"></div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+/* ── CONFIGURACIÓN ───────────────────────────────────────────── */
+const WEBHOOK_URL = "https://hook.eu1.make.com/TU-URL-AQUI";
+/* ─────────────────────────────────────────────────────────────── */
+
+/* Disponibilidad de licencias — actualiza con fechas reales */
+const BOOKINGS = {
+  "2026-04-11":["A"],
+  "2026-04-14":["A","B"],
+  "2026-04-16":["B"],
+  "2026-04-21":["A"],
+  "2026-04-22":["A","B"],
+  "2026-04-28":["B"],
+  "2026-05-05":["A"],
+  "2026-05-07":["A","B"],
+  "2026-05-12":["B"],
+  "2026-05-19":["A"],
+  "2026-05-26":["A","B"]
+};
+
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const DIAS  = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const HORAS = [];
+for(let h=7;h<=21;h++){HORAS.push(pad(h)+":00");if(h<21)HORAS.push(pad(h)+":30");}
+const DURS = ["1 hora","1.5 horas","2 horas","2.5 horas","3 horas","3.5 horas","4 horas"];
+
+function pad(n){return String(n).padStart(2,"0")}
+function dkey(y,m,d){return y+"-"+pad(m+1)+"-"+pad(d)}
+function todayStr(){const t=new Date();return dkey(t.getFullYear(),t.getMonth(),t.getDate())}
+function avail(k){const b=BOOKINGS[k]||[];if(!b.length)return"free";if(b.includes("A")&&b.includes("B"))return"full";return"pA";}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+/* ── ESTADO ───────────────────────────────────────────────────── */
+const st = {
+  step:1, submitted:false,
+  nombre:"", economico:"", departamento:"", correo:"", correoConfirm:"", telefono:"",
+  tema:"", descripcion:"", fecha:"", hora:"", duracion:"",
+  panelistas:[{nombre:"",correo:""}],
+  grabacion:"", grabTipo:"nube",
+  dryRun:"", dryRunTipo:"dia",
+  inscripcion:"", aprobacion:"auto",
+  bannerName:"", solicitud:"",
+  calY:2026, calM:3, selDate:null, availResult:""
+};
+
+/* ── NAVEGACIÓN ───────────────────────────────────────────────── */
+function maxStep(){return st.inscripcion==="no"?4:5;}
+function getStepDefs(){
+  const base=[{n:1,lbl:"Solicitante"},{n:2,lbl:"Webinar"},{n:3,lbl:"Técnico"}];
+  if(st.inscripcion!=="no")base.push({n:4,lbl:"Inscripción"});
+  base.push({n:maxStep(),lbl:"Revisión"});
+  return base;
+}
+function nextStep(){const ms=maxStep();if(st.step===3&&st.inscripcion==="no")st.step=ms;else if(st.step<ms)st.step++;render();}
+function prevStep(){const ms=maxStep();if(st.step===ms&&st.inscripcion==="no")st.step=3;else if(st.step>1)st.step--;render();}
+function setSt(k,v){st[k]=v;render();}
+function sn(k,v){st[k]=v;}
+function canNext(){
+  if(st.step===1)return st.nombre&&st.economico&&st.departamento&&st.correo&&st.correoConfirm&&st.correo===st.correoConfirm&&st.telefono;
+  if(st.step===2)return st.tema&&st.descripcion&&st.fecha&&st.hora&&st.duracion;
+  if(st.step===3)return st.grabacion&&st.dryRun&&st.inscripcion;
+  return true;
+}
+
+/* ── STEPPER ──────────────────────────────────────────────────── */
+function renderStepper(){
+  const defs=getStepDefs(); const cur=st.step;
+  let h='<div class="wbr-step">';
+  defs.forEach((d,i)=>{
+    const isDone=d.n<cur||(st.inscripcion==="no"&&d.n<=3&&cur===maxStep());
+    const isActive=d.n===cur;
+    const cls=isDone?"wbr-sc-done":isActive?"wbr-sc-active":"wbr-sc-pending";
+    h+=`<div class="wbr-stcol"><div class="wbr-stc ${cls}">${isDone?"&#10003;":i+1}</div><div class="wbr-stlbl">${d.lbl}</div></div>`;
+    if(i<defs.length-1){
+      const lc=isDone?"background:#6ee7b7":isActive?"background:#0E72ED":"";
+      h+=`<div class="wbr-stline" style="${lc}"></div>`;
+    }
+  });
+  h+="</div>";
+  document.getElementById("wbr-stepper").innerHTML=h;
+}
+
+/* ── CALENDARIO ───────────────────────────────────────────────── */
+function renderCal(){
+  const y=st.calY, m=st.calM;
+  const days=new Date(y,m+1,0).getDate();
+  const first=new Date(y,m,1).getDay();
+  const td=todayStr();
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <button class="wbr-btn-sm" id="wbr-cal-prev">&#8592;</button>
+    <span style="font-size:13px;font-weight:600;color:#111">${MESES[m]} ${y}</span>
+    <button class="wbr-btn-sm" id="wbr-cal-next">&#8594;</button>
+  </div><div class="wbr-cal-grid">`;
+  DIAS.forEach(d=>h+=`<div class="wbr-cal-h">${d}</div>`);
+  for(let i=0;i<first;i++)h+=`<div class="wbr-cal-d empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const k=dkey(y,m,d); const a=avail(k); const isPast=k<td; const isSel=st.selDate===k;
+    let cls=isPast?"past":a; if(isSel)cls+=" sel";
+    const dc=isPast?"":"data-date=\""+k+"\"";
+    h+=`<div class="wbr-cal-d ${cls}" ${dc}>${d}</div>`;
+  }
+  h+=`</div><div class="wbr-legend">
+    <div class="wbr-legend-i"><div class="wbr-dot" style="background:#e5e7eb;border:.5px solid #d1d5db"></div>Libre</div>
+    <div class="wbr-legend-i"><div class="wbr-dot" style="background:#fef3c7"></div>1 lic. ocupada</div>
+    <div class="wbr-legend-i"><div class="wbr-dot" style="background:#fee2e2"></div>Sin disponibilidad</div>
+  </div>`;
+  if(st.availResult)h+=`<div class="wbr-avail">${st.availResult}</div>`;
+  return h;
+}
+
+function bindCal(){
+  const prev=document.getElementById("wbr-cal-prev");
+  const next=document.getElementById("wbr-cal-next");
+  if(prev)prev.addEventListener("click",function(){
+    st.calM--; if(st.calM<0){st.calM=11;st.calY--;}
+    document.getElementById("wbr-body").innerHTML=renderStep2(); bindCal();
+  });
+  if(next)next.addEventListener("click",function(){
+    st.calM++; if(st.calM>11){st.calM=0;st.calY++;}
+    document.getElementById("wbr-body").innerHTML=renderStep2(); bindCal();
+  });
+  document.querySelectorAll(".wbr-cal-d[data-date]").forEach(function(el){
+    el.addEventListener("click",function(){
+      const k=this.getAttribute("data-date");
+      const b=BOOKINGS[k]||[];
+      const p=k.split("-"); const f=p[2]+"/"+p[1]+"/"+p[0];
+      let msg="";
+      if(!b.length)msg='<span class="wbr-badge wbr-badge-ok">Disponible</span> Ambas licencias libres el '+f+'.';
+      else if(b.includes("A")&&b.includes("B"))msg='<span class="wbr-badge wbr-badge-err">Sin disponibilidad</span> Ambas licencias ocupadas el '+f+'.';
+      else if(b.includes("A"))msg='<span class="wbr-badge wbr-badge-warn">Parcial</span> Lic. A ocupada el '+f+'. <strong>Licencia B disponible.</strong>';
+      else msg='<span class="wbr-badge wbr-badge-warn">Parcial</span> Lic. B ocupada el '+f+'. <strong>Licencia A disponible.</strong>';
+      st.selDate=k; st.availResult=msg;
+      document.getElementById("wbr-body").innerHTML=renderStep2(); bindCal();
+    });
+  });
+}
+
+/* ── PASO 1 — SOLICITANTE ─────────────────────────────────────── */
+function renderStep1(){
+  const emailErr=st.correo&&st.correoConfirm&&st.correo!==st.correoConfirm;
+  return`<div class="wbr-card"><div class="wbr-secttl">Información del solicitante</div>
+    <div class="wbr-g2">
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">Nombre completo</label><input class="wbr-input" type="text" value="${esc(st.nombre)}" oninput="sn('nombre',this.value)" placeholder="Nombre y apellidos"></div>
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">No. Económico</label><input class="wbr-input" type="text" value="${esc(st.economico)}" oninput="sn('economico',this.value)" placeholder="Ej. 12345"></div>
+    </div>
+    <div class="wbr-g2">
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">Departamento</label><input class="wbr-input" type="text" value="${esc(st.departamento)}" oninput="sn('departamento',this.value)" placeholder="Nombre del departamento"></div>
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">Teléfono / Extensión</label><input class="wbr-input" type="tel" value="${esc(st.telefono)}" oninput="sn('telefono',this.value)" placeholder="55 1234 5678 ext. 100"></div>
+    </div>
+    <div class="wbr-fld"><label class="wbr-lbl wbr-req">Correo electrónico</label><input class="wbr-input" type="email" value="${esc(st.correo)}" oninput="sn('correo',this.value)" placeholder="nombre@institucion.edu.mx"></div>
+    <div class="wbr-fld">
+      <label class="wbr-lbl wbr-req">Confirmar correo</label>
+      <input class="wbr-input" type="email" value="${esc(st.correoConfirm)}" oninput="sn('correoConfirm',this.value)" style="${emailErr?"border-color:#ef4444":""}" placeholder="Repita su correo">
+      ${emailErr?'<div style="font-size:11px;color:#ef4444;margin-top:3px">Los correos no coinciden</div>':''}
+    </div>
+  </div>`;
+}
+
+/* ── PASO 2 — WEBINAR ─────────────────────────────────────────── */
+function renderStep2(){
+  return`<div class="wbr-card"><div class="wbr-secttl">Información del webinar</div>
+    <div class="wbr-fld"><label class="wbr-lbl wbr-req">Tema del webinar</label><input class="wbr-input" type="text" value="${esc(st.tema)}" oninput="sn('tema',this.value)" placeholder="Título del evento"></div>
+    <div class="wbr-fld"><label class="wbr-lbl wbr-req">Descripción del evento</label><textarea class="wbr-input wbr-textarea" oninput="sn('descripcion',this.value)" placeholder="Breve descripción del contenido y objetivos">${esc(st.descripcion)}</textarea></div>
+    <div class="wbr-g3">
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">Fecha</label><input class="wbr-input" type="date" value="${st.fecha}" min="${todayStr()}" oninput="sn('fecha',this.value)"></div>
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">Hora de inicio</label><select class="wbr-input" onchange="sn('hora',this.value)"><option value="">Seleccionar</option>${HORAS.map(h=>`<option value="${h}"${st.hora===h?" selected":""}>${h}</option>`).join("")}</select></div>
+      <div class="wbr-fld"><label class="wbr-lbl wbr-req">Duración</label><select class="wbr-input" onchange="sn('duracion',this.value)"><option value="">Seleccionar</option>${DURS.map(d=>`<option value="${d}"${st.duracion===d?" selected":""}>${d}</option>`).join("")}</select></div>
+    </div>
+  </div>
+  <div class="wbr-card"><div class="wbr-secttl">Verificar disponibilidad</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px">Selecciona una fecha en el calendario para verificar las licencias.</p>
+    ${renderCal()}
+  </div>`;
+}
+
+/* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
+function renderPanelistas(){
+  return st.panelistas.map((p,i)=>`
+    <div class="wbr-pan-row">
+      <div><label class="wbr-lbl">Nombre</label><input class="wbr-input" type="text" value="${esc(p.nombre)}" oninput="wbrUpPan(${i},'nombre',this.value)" placeholder="Nombre completo"></div>
+      <div><label class="wbr-lbl">Correo</label><input class="wbr-input" type="email" value="${esc(p.correo)}" oninput="wbrUpPan(${i},'correo',this.value)" placeholder="correo@dominio.com"></div>
+      <div>${st.panelistas.length>1?`<button class="wbr-btn-sm" id="wbr-rm-${i}" data-idx="${i}" style="color:#ef4444;margin-top:18px">&#x2715;</button>`:"<div style='height:36px;margin-top:18px'></div>"}</div>
+    </div>`).join("");
+}
+window.wbrUpPan=function(i,k,v){st.panelistas[i][k]=v;};
+
+function bindPanelistas(){
+  const addBtn=document.getElementById("wbr-add-pan");
+  if(addBtn)addBtn.addEventListener("click",function(){
+    st.panelistas.push({nombre:"",correo:""});
+    document.getElementById("wbr-pan-list").innerHTML=renderPanelistas();
+    bindPanelistas();
+  });
+  st.panelistas.forEach(function(_,i){
+    const rm=document.getElementById("wbr-rm-"+i);
+    if(rm)rm.addEventListener("click",function(){
+      st.panelistas.splice(i,1);
+      document.getElementById("wbr-pan-list").innerHTML=renderPanelistas();
+      bindPanelistas();
+    });
+  });
+}
+
+function renderStep3(){
+  return`<div class="wbr-card"><div class="wbr-secttl">Panelistas / Expositores</div>
+    <p class="wbr-tip" style="margin-bottom:10px">Agrega los panelistas que necesitan permisos de coanfitrión.</p>
+    <div id="wbr-pan-list">${renderPanelistas()}</div>
+    <button class="wbr-btn-sm" id="wbr-add-pan" style="margin-top:6px">+ Agregar panelista</button>
+  </div>
+  <div class="wbr-card"><div class="wbr-secttl">Configuración técnica</div>
+    <div class="wbr-fld">
+      <label class="wbr-lbl wbr-req">¿Se requiere grabación?</label>
+      <label class="wbr-opt${st.grabacion==="si"?" on":""}"><input type="radio" name="wbr-grab" onchange="setSt('grabacion','si')"> Sí, requiero grabación</label>
+      <label class="wbr-opt${st.grabacion==="no"?" on":""}"><input type="radio" name="wbr-grab" onchange="setSt('grabacion','no')"> No es necesario</label>
+      ${st.grabacion==="si"?`<div class="wbr-cond" style="display:block">
+        <label class="wbr-lbl">Tipo de grabación</label>
+        <label class="wbr-opt${st.grabTipo==="nube"?" on":""}"><input type="radio" name="wbr-gtipo" onchange="setSt('grabTipo','nube')"> En la nube (Zoom Cloud)</label>
+        <label class="wbr-opt${st.grabTipo==="local"?" on":""}"><input type="radio" name="wbr-gtipo" onchange="setSt('grabTipo','local')"> Local (computadora del anfitrión)</label>
+      </div>`:""}
+    </div>
+    <div class="wbr-fld">
+      <label class="wbr-lbl wbr-req">¿Sesión de prueba (Dry Run)?</label>
+      <p class="wbr-tip" style="margin-bottom:8px">Prueba de audio y video con el administrador antes del evento.</p>
+      <label class="wbr-opt${st.dryRun==="si"?" on":""}"><input type="radio" name="wbr-dry" onchange="setSt('dryRun','si')"> Sí, requiero sesión de prueba</label>
+      <label class="wbr-opt${st.dryRun==="no"?" on":""}"><input type="radio" name="wbr-dry" onchange="setSt('dryRun','no')"> No es necesario</label>
+      ${st.dryRun==="si"?`<div class="wbr-cond" style="display:block">
+        <label class="wbr-lbl">¿Cuándo realizar la prueba?</label>
+        <label class="wbr-opt${st.dryRunTipo==="dia"?" on":""}"><input type="radio" name="wbr-drtipo" onchange="setSt('dryRunTipo','dia')"> Un día antes del evento (30 min)</label>
+        <label class="wbr-opt${st.dryRunTipo==="15min"?" on":""}"><input type="radio" name="wbr-drtipo" onchange="setSt('dryRunTipo','15min')"> 15 minutos antes del evento</label>
+      </div>`:""}
+    </div>
+    <div class="wbr-fld">
+      <label class="wbr-lbl wbr-req">¿Se requiere inscripción al webinar?</label>
+      <label class="wbr-opt${st.inscripcion==="si"?" on":""}"><input type="radio" name="wbr-ins" onchange="setSt('inscripcion','si')"> Sí, con página de registro</label>
+      <label class="wbr-opt${st.inscripcion==="no"?" on":""}"><input type="radio" name="wbr-ins" onchange="setSt('inscripcion','no')"> No, acceso libre con liga</label>
+    </div>
+    <div class="wbr-fld">
+      <label class="wbr-lbl">Solicitud adicional</label>
+      <textarea class="wbr-input wbr-textarea" oninput="sn('solicitud',this.value)" placeholder="Cualquier función o requerimiento no contemplado...">${esc(st.solicitud)}</textarea>
+    </div>
+  </div>`;
+}
+
+/* ── PASO 4 — INSCRIPCIÓN ─────────────────────────────────────── */
+function renderStep4(){
+  return`<div class="wbr-info">Esta sección aplica porque solicitaste <strong>inscripción con registro</strong>.</div>
+  <div class="wbr-card"><div class="wbr-secttl">Tipo de aprobación</div>
+    <div class="wbr-fld">
+      <label class="wbr-opt${st.aprobacion==="auto"?" on":""}"><input type="radio" name="wbr-apr" onchange="setSt('aprobacion','auto')"> Automática — aprobación inmediata al registrarse</label>
+      <label class="wbr-opt${st.aprobacion==="manual"?" on":""}"><input type="radio" name="wbr-apr" onchange="setSt('aprobacion','manual')"> Manual — el anfitrión aprueba cada solicitud</label>
+      <label class="wbr-opt${st.aprobacion==="cerrado"?" on":""}"><input type="radio" name="wbr-apr" onchange="setSt('aprobacion','cerrado')"> Cerrado — solo invitados directos</label>
+    </div>
+  </div>
+  <div class="wbr-card"><div class="wbr-secttl">Banner / Imagen del webinar</div>
+    <p class="wbr-tip" style="margin-bottom:10px">Imagen para la página de inscripción. Recomendado: 1280×720 px (JPG, PNG).</p>
+    <div class="wbr-drop${st.bannerName?" ok":""}" id="wbr-drop">
+      <input type="file" id="wbr-file" accept="image/*,.pdf,.ppt,.pptx" style="display:none">
+      ${st.bannerName?`<div style="font-size:20px;margin-bottom:4px">&#10003;</div><strong>${esc(st.bannerName)}</strong><div style="font-size:11px;margin-top:4px">Clic para cambiar</div>`:`<div style="font-size:22px;margin-bottom:6px">&#11014;</div>Clic para seleccionar archivo<div style="font-size:11px;margin-top:4px">o arrastra aquí la imagen</div>`}
+    </div>
+  </div>`;
+}
+
+function bindStep4(){
+  const drop=document.getElementById("wbr-drop");
+  const fileIn=document.getElementById("wbr-file");
+  if(drop)drop.addEventListener("click",function(){if(fileIn)fileIn.click();});
+  if(fileIn)fileIn.addEventListener("change",function(){
+    if(this.files&&this.files[0]){st.bannerName=this.files[0].name;render();}
+  });
+}
+
+/* ── PASO 5 — REVISIÓN ────────────────────────────────────────── */
+function renderStep5(){
+  const fecha=st.fecha?st.fecha.split("-").reverse().join("/"):"—";
+  const folio="WEB-"+(st.economico||"000")+"-"+(st.fecha||"00000000").replace(/-/g,"");
+  const pans=st.panelistas.filter(p=>p.correo).map(p=>p.correo).join(", ")||"Ninguno";
+  const emailBody=
+    "ASUNTO: [NUEVA RESERVA] - Webinar Licencia 500 - "+fecha+"\n\n"+
+    "DATOS DEL SOLICITANTE:\n"+
+    "* Nombre: "+st.nombre+" | No. Económico: "+st.economico+" | Depto: "+st.departamento+"\n"+
+    "* Correo: "+st.correo+" | Tel: "+st.telefono+"\n\n"+
+    "DATOS DEL EVENTO:\n"+
+    "* Tema: "+st.tema+"\n"+
+    "* Fecha y Hora: "+fecha+" a las "+st.hora+" ("+st.duracion+")\n"+
+    "* Inscripción: "+(st.inscripcion==="si"?"Sí - "+st.aprobacion:st.inscripcion==="no"?"No":"—")+"\n"+
+    "* Panelistas: "+pans+"\n\n"+
+    "NOTAS TÉCNICAS:\n"+
+    "* Requiere grabación: "+(st.grabacion==="si"?"Sí ("+st.grabTipo+")":st.grabacion==="no"?"No":"—")+"\n"+
+    "* Sesión de práctica: "+(st.dryRun==="si"?"Sí ("+(st.dryRunTipo==="dia"?"día anterior":"15 min antes")+")":st.dryRun==="no"?"No":"—")+
+    (st.bannerName?"\n* Banner adjunto: "+st.bannerName:"")+
+    (st.solicitud?"\n* Solicitud adicional: "+st.solicitud:"")+
+    "\n\nFolio: "+folio;
+  return`<div class="wbr-card"><div class="wbr-secttl">Revisión de solicitud</div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Nombre</div><div class="wbr-rev-val">${esc(st.nombre)}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">No. Económico</div><div class="wbr-rev-val">${esc(st.economico)}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Departamento</div><div class="wbr-rev-val">${esc(st.departamento)}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Correo</div><div class="wbr-rev-val">${esc(st.correo)}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Tema del webinar</div><div class="wbr-rev-val">${esc(st.tema)||"—"}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Fecha y hora</div><div class="wbr-rev-val">${fecha} &middot; ${st.hora||"—"} &middot; ${st.duracion||"—"}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Grabación</div><div class="wbr-rev-val">${st.grabacion==="si"?"Sí ("+st.grabTipo+")":st.grabacion==="no"?"No":"—"}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Sesión de prueba</div><div class="wbr-rev-val">${st.dryRun==="si"?"Sí ("+(st.dryRunTipo==="dia"?"día anterior":"15 min antes")+")":st.dryRun==="no"?"No":"—"}</div></div>
+    <div class="wbr-rev-row"><div class="wbr-rev-lbl">Inscripción</div><div class="wbr-rev-val">${st.inscripcion==="si"?"Sí ("+st.aprobacion+")":st.inscripcion==="no"?"No":"—"}</div></div>
+    ${st.panelistas.filter(p=>p.correo).length?`<div class="wbr-rev-row"><div class="wbr-rev-lbl">Panelistas</div><div class="wbr-rev-val">${pans}</div></div>`:""}
+    ${st.bannerName?`<div class="wbr-rev-row"><div class="wbr-rev-lbl">Banner</div><div class="wbr-rev-val">${esc(st.bannerName)}</div></div>`:""}
+  </div>
+  <div class="wbr-card"><div class="wbr-secttl">Vista previa del correo al administrador</div>
+    <p class="wbr-tip" style="margin-bottom:6px">Contenido que recibirá el administrador vía Make.</p>
+    <div class="wbr-email-prev">${esc(emailBody)}</div>
+  </div>`;
+}
+
+/* ── ENVÍO A MAKE VÍA WEBHOOK ─────────────────────────────────── */
+function bindEnviar(){
+  const btn=document.getElementById("wbr-send-btn");
+  if(!btn)return;
+  btn.addEventListener("click",async function(){
+    btn.disabled=true;
+    btn.textContent="Enviando...";
+    const fecha=st.fecha?st.fecha.split("-").reverse().join("/"):"—";
+    const folio="WEB-"+(st.economico||"000")+"-"+(st.fecha||"00000000").replace(/-/g,"");
+    const pans=st.panelistas.filter(p=>p.correo);
+    const payload={
+      folio:        folio,
+      nombre:       st.nombre,
+      economico:    st.economico,
+      departamento: st.departamento,
+      correo:       st.correo,
+      telefono:     st.telefono,
+      tema:         st.tema,
+      descripcion:  st.descripcion,
+      fecha:        fecha,
+      hora:         st.hora,
+      duracion:     st.duracion,
+      grabacion:    st.grabacion,
+      grabTipo:     st.grabacion==="si"?st.grabTipo:"",
+      dryRun:       st.dryRun,
+      dryRunTipo:   st.dryRun==="si"?st.dryRunTipo:"",
+      inscripcion:  st.inscripcion,
+      aprobacion:   st.inscripcion==="si"?st.aprobacion:"",
+      bannerNombre: st.bannerName||"",
+      solicitud:    st.solicitud||"",
+      panelistas:   pans,
+      panelistas_texto: pans.map(p=>p.nombre+" <"+p.correo+">").join(", ")||"Ninguno",
+      asunto:       "[NUEVA RESERVA] - Webinar Licencia 500 - "+fecha,
+      timestamp:    new Date().toISOString()
+    };
+    try{
+      const res=await fetch(WEBHOOK_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      if(res.ok){st.submitted=true;render();}
+      else throw new Error("HTTP "+res.status);
+    }catch(e){
+      btn.disabled=false;
+      btn.textContent="Enviar solicitud";
+      alert("Error al enviar. Verifica tu conexión e intenta de nuevo.\n("+e.message+")");
+    }
+  });
+}
+
+/* ── PANTALLA DE ÉXITO ────────────────────────────────────────── */
+function renderSuccess(){
+  const folio="WEB-"+(st.economico||"000")+"-"+(st.fecha||"00000000").replace(/-/g,"");
+  return`<div style="text-align:center;padding:2rem 1rem">
+    <div style="width:56px;height:56px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:26px;border:.5px solid #6ee7b7">&#10003;</div>
+    <h2 style="font-size:18px;font-weight:600;color:#111;margin-bottom:8px">¡Solicitud enviada con éxito!</h2>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:14px">Tu número de folio de seguimiento es:</p>
+    <div class="wbr-folio">${folio}</div>
+    <p style="font-size:13px;color:#6b7280;margin-top:16px;max-width:380px;margin-left:auto;margin-right:auto">Se envió confirmación a <strong>${esc(st.correo)}</strong>. Para cambios, responde al correo de confirmación.</p>
+    <div style="margin-top:24px;padding-top:20px;border-top:.5px solid #f3f4f6">
+      <div class="wbr-card" style="text-align:left;max-width:380px;margin:0 auto">
+        <div class="wbr-secttl">Resumen</div>
+        <div class="wbr-rev-row"><div class="wbr-rev-lbl">Webinar</div><div class="wbr-rev-val">${esc(st.tema)}</div></div>
+        <div class="wbr-rev-row"><div class="wbr-rev-lbl">Fecha</div><div class="wbr-rev-val">${st.fecha?st.fecha.split("-").reverse().join("/"):"—"} &middot; ${st.hora}</div></div>
+        <div class="wbr-rev-row" style="border:none"><div class="wbr-rev-lbl">Duración</div><div class="wbr-rev-val">${st.duracion}</div></div>
+      </div>
+    </div>
+    <button id="wbr-reset-btn" style="margin-top:20px;background:transparent;border:.5px solid #d1d5db;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px;color:#6b7280;font-family:inherit">Nueva solicitud</button>
+  </div>`;
+}
+
+/* ── RENDER PRINCIPAL ─────────────────────────────────────────── */
+function render(){
+  const ms=maxStep();
+  if(st.submitted){
+    document.getElementById("wbr-stepper").innerHTML="";
+    document.getElementById("wbr-body").innerHTML="<div style='padding:0 1.25rem'>"+renderSuccess()+"</div>";
+    document.getElementById("wbr-nav").innerHTML="";
+    const rb=document.getElementById("wbr-reset-btn");
+    if(rb)rb.addEventListener("click",function(){
+      Object.assign(st,{step:1,submitted:false,nombre:"",economico:"",departamento:"",correo:"",correoConfirm:"",telefono:"",tema:"",descripcion:"",fecha:"",hora:"",duracion:"",panelistas:[{nombre:"",correo:""}],grabacion:"",grabTipo:"nube",dryRun:"",dryRunTipo:"dia",inscripcion:"",aprobacion:"auto",bannerName:"",solicitud:"",selDate:null,availResult:""});
+      render();
+    });
+    return;
+  }
+
+  renderStepper();
+
+  let body="";
+  if(st.step===1)body=renderStep1();
+  else if(st.step===2)body=renderStep2();
+  else if(st.step===3)body=renderStep3();
+  else if(st.step===4&&st.inscripcion!=="no")body=renderStep4();
+  else body=renderStep5();
+  document.getElementById("wbr-body").innerHTML=body;
+
+  const ok=canNext(); const isLast=st.step===ms;
+  document.getElementById("wbr-nav").innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+    ${st.step>1?`<button class="wbr-btn-sm" id="wbr-prev-btn" style="font-size:13px;padding:8px 16px">&#8592; Anterior</button>`:`<div></div>`}
+    ${isLast
+      ?`<button id="wbr-send-btn" style="opacity:1;background:#0E72ED;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Enviar solicitud</button>`
+      :`<button id="wbr-next-btn" style="opacity:${ok?1:0.45};background:#0E72ED;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:${ok?"pointer":"default"};font-family:inherit">Siguiente &#8594;</button>`
+    }
+  </div>`;
+
+  /* Bind botones de navegación */
+  const prevBtn=document.getElementById("wbr-prev-btn");
+  if(prevBtn)prevBtn.addEventListener("click",prevStep);
+
+  const nextBtn=document.getElementById("wbr-next-btn");
+  if(nextBtn)nextBtn.addEventListener("click",function(){if(canNext())nextStep();});
+
+  /* Bind envío Make */
+  bindEnviar();
+
+  /* Bind específicos por paso */
+  if(st.step===2)bindCal();
+  if(st.step===3)bindPanelistas();
+  if(st.step===4&&st.inscripcion!=="no")bindStep4();
+}
+
+/* ── EVENTOS GLOBALES DEL MODAL ───────────────────────────────── */
+document.getElementById("wbr-trigger").addEventListener("click",function(){
+  document.getElementById("wbr-overlay").style.display="flex";
+});
+document.getElementById("wbr-trigger").addEventListener("mouseover",function(){
+  this.style.background="#0B5EC7";
+});
+document.getElementById("wbr-trigger").addEventListener("mouseout",function(){
+  this.style.background="#0E72ED";
+});
+document.getElementById("wbr-close").addEventListener("click",function(){
+  document.getElementById("wbr-overlay").style.display="none";
+});
+document.getElementById("wbr-overlay").addEventListener("click",function(e){
+  if(e.target===this)this.style.display="none";
+});
+
+render();
+})();
+</script>
