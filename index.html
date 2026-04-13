@@ -273,64 +273,45 @@ function bindStep2(){
 }
 
 /* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
-// 1. Esta función SOLO se encarga de los inputs y el botón "Eliminar" de cada fila
-function bindPanelistas() {
-  st.panelistas.forEach(function(_, i) {
-    var ni = document.getElementById("pan-n-" + i);
-    var ci = document.getElementById("pan-c-" + i);
-    var rm = document.getElementById("wbr-rm-" + i);
+function initPanelistasApp() {
+  const listContainer = document.getElementById("wbr-pan-list");
+  const addBtn = document.getElementById("wbr-add-pan");
 
-    if (ni) ni.addEventListener("input", function() { st.panelistas[i].nombre = this.value; });
-    if (ci) ci.addEventListener("input", function() { st.panelistas[i].correo = this.value; });
+  // DELEGACIÓN DE EVENTOS: Un solo listener para TODO el contenedor
+  listContainer.addEventListener("input", function(e) {
+    const target = e.target;
+    const index = target.id.split('-').pop(); // Extrae el número del ID (pan-n-0 -> 0)
     
-    if (rm) {
-      // Usamos "onclick" directo o removeEventListener para evitar duplicidad si fuera necesario,
-      // pero al sobreescribir el innerHTML en el render, los listeners viejos mueren.
-      rm.onclick = function() {
-        st.panelistas.splice(i, 1);
-        refreshPanelistas();
-      };
+    if (target.id.startsWith("pan-n-")) {
+      st.panelistas[index].nombre = target.value;
+    } else if (target.id.startsWith("pan-c-")) {
+      st.panelistas[index].correo = target.value;
     }
   });
-}
 
-// 2. Función auxiliar para refrescar la vista y re-vincular
-function refreshPanelistas() {
-  document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
-  bindPanelistas();
-}
-
-// 3. Configuración inicial (ESTO VA AFUERA o en un init)
-var addBtn = document.getElementById("wbr-add-pan");
-if (addBtn) {
-  // Este listener se queda aquí, solo se agrega UNA VEZ
-  addBtn.addEventListener("click", function() {
-    st.panelistas.push({ nombre: "", correo: "" });
-    refreshPanelistas();
+  listContainer.addEventListener("click", function(e) {
+    // Si el click fue en un botón de eliminar (o su icono)
+    const btn = e.target.closest('button');
+    if (btn && btn.id.startsWith("wbr-rm-")) {
+      const index = btn.id.split('-').pop();
+      st.panelistas.splice(index, 1);
+      renderUI();
+    }
   });
+
+  if (addBtn) {
+    addBtn.onclick = function() {
+      st.panelistas.push({ nombre: "", correo: "" });
+      renderUI();
+    };
+  }
+
+  renderUI();
 }
 
-// Ejecución inicial
-bindPanelistas();
-
-// 2. Función auxiliar para refrescar la vista y re-vincular
-function refreshPanelistas() {
+function renderUI() {
   document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
-  bindPanelistas();
 }
-
-// 3. Configuración inicial (ESTO VA AFUERA o en un init)
-var addBtn = document.getElementById("wbr-add-pan");
-if (addBtn) {
-  // Este listener se queda aquí, solo se agrega UNA VEZ
-  addBtn.addEventListener("click", function() {
-    st.panelistas.push({ nombre: "", correo: "" });
-    refreshPanelistas();
-  });
-}
-
-// Ejecución inicial
-bindPanelistas();
 
 function renderStep3(){
   var grabCond = st.grabacion==="si"
