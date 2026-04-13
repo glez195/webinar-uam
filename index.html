@@ -288,26 +288,45 @@ function renderPanelistas(){
   }).join("");
 }
 
-function bindPanelistas(){
-  st.panelistas.forEach(function(_,i){
-    var ni = document.getElementById("pan-n-"+i);
-    var ci = document.getElementById("pan-c-"+i);
-    var rm = document.getElementById("wbr-rm-"+i);
-    if(ni) ni.addEventListener("input", function(){ st.panelistas[i].nombre=this.value; });
-    if(ci) ci.addEventListener("input", function(){ st.panelistas[i].correo=this.value; });
-    if(rm) rm.addEventListener("click", function(){
-      st.panelistas.splice(i,1);
-      document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
-      bindPanelistas();
-    });
-  });
-  var addBtn = document.getElementById("wbr-add-pan");
-  if(addBtn) addBtn.addEventListener("click", function(){
-    st.panelistas.push({nombre:"",correo:""});
-    document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
-    bindPanelistas();
+// 1. Esta función SOLO se encarga de los inputs y el botón "Eliminar" de cada fila
+function bindPanelistas() {
+  st.panelistas.forEach(function(_, i) {
+    var ni = document.getElementById("pan-n-" + i);
+    var ci = document.getElementById("pan-c-" + i);
+    var rm = document.getElementById("wbr-rm-" + i);
+
+    if (ni) ni.addEventListener("input", function() { st.panelistas[i].nombre = this.value; });
+    if (ci) ci.addEventListener("input", function() { st.panelistas[i].correo = this.value; });
+    
+    if (rm) {
+      // Usamos "onclick" directo o removeEventListener para evitar duplicidad si fuera necesario,
+      // pero al sobreescribir el innerHTML en el render, los listeners viejos mueren.
+      rm.onclick = function() {
+        st.panelistas.splice(i, 1);
+        refreshPanelistas();
+      };
+    }
   });
 }
+
+// 2. Función auxiliar para refrescar la vista y re-vincular
+function refreshPanelistas() {
+  document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
+  bindPanelistas();
+}
+
+// 3. Configuración inicial (ESTO VA AFUERA o en un init)
+var addBtn = document.getElementById("wbr-add-pan");
+if (addBtn) {
+  // Este listener se queda aquí, solo se agrega UNA VEZ
+  addBtn.addEventListener("click", function() {
+    st.panelistas.push({ nombre: "", correo: "" });
+    refreshPanelistas();
+  });
+}
+
+// Ejecución inicial
+bindPanelistas();
 
 function renderStep3(){
   var grabCond = st.grabacion==="si"
