@@ -273,45 +273,43 @@ function bindStep2(){
 }
 
 /* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
-function initPanelistasApp() {
-  const listContainer = document.getElementById("wbr-pan-list");
-  const addBtn = document.getElementById("wbr-add-pan");
-
-  // DELEGACIÓN DE EVENTOS: Un solo listener para TODO el contenedor
-  listContainer.addEventListener("input", function(e) {
-    const target = e.target;
-    const index = target.id.split('-').pop(); // Extrae el número del ID (pan-n-0 -> 0)
-    
-    if (target.id.startsWith("pan-n-")) {
-      st.panelistas[index].nombre = target.value;
-    } else if (target.id.startsWith("pan-c-")) {
-      st.panelistas[index].correo = target.value;
-    }
-  });
-
-  listContainer.addEventListener("click", function(e) {
-    // Si el click fue en un botón de eliminar (o su icono)
-    const btn = e.target.closest('button');
-    if (btn && btn.id.startsWith("wbr-rm-")) {
-      const index = btn.id.split('-').pop();
-      st.panelistas.splice(index, 1);
-      renderUI();
-    }
-  });
-
-  if (addBtn) {
-    addBtn.onclick = function() {
-      st.panelistas.push({ nombre: "", correo: "" });
-      renderUI();
-    };
-  }
-
-  renderUI();
+/* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
+function renderPanelistas(){
+  return st.panelistas.map(function(p,i){
+    var rmBtn = st.panelistas.length>1
+      ? '<button class="wbr-btn-sm" id="wbr-rm-'+i+'" style="color:#ef4444;margin-top:18px">&#x2715;</button>'
+      : '<div style="height:36px;margin-top:18px"></div>';
+    return '<div class="wbr-pan-row">'
+      +'<div><label class="wbr-lbl">Nombre</label>'
+        +'<input class="wbr-input" type="text" id="pan-n-'+i+'" value="'+esc(p.nombre)+'" placeholder="Nombre completo"></div>'
+      +'<div><label class="wbr-lbl">Correo</label>'
+        +'<input class="wbr-input" type="email" id="pan-c-'+i+'" value="'+esc(p.correo)+'" placeholder="correo@dominio.com"></div>'
+      +'<div>'+rmBtn+'</div>'
+    +'</div>';
+  }).join("");
 }
 
-function renderUI() {
-  document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
+function bindPanelistas(){
+  st.panelistas.forEach(function(_,i){
+    var ni = document.getElementById("pan-n-"+i);
+    var ci = document.getElementById("pan-c-"+i);
+    var rm = document.getElementById("wbr-rm-"+i);
+    if(ni) ni.addEventListener("input", function(){ st.panelistas[i].nombre=this.value; });
+    if(ci) ci.addEventListener("input", function(){ st.panelistas[i].correo=this.value; });
+    if(rm) rm.addEventListener("click", function(){
+      st.panelistas.splice(i,1);
+      document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
+      bindPanelistas();
+    });
+  });
+  var addBtn = document.getElementById("wbr-add-pan");
+  if(addBtn) addBtn.addEventListener("click", function(){
+    st.panelistas.push({nombre:"",correo:""});
+    document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
+    bindPanelistas();
+  });
 }
+
 
 function renderStep3(){
   var grabCond = st.grabacion==="si"
