@@ -273,21 +273,6 @@ function bindStep2(){
 }
 
 /* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
-function renderPanelistas(){
-  return st.panelistas.map(function(p,i){
-    var rmBtn = st.panelistas.length>1
-      ? '<button class="wbr-btn-sm" id="wbr-rm-'+i+'" style="color:#ef4444;margin-top:18px">&#x2715;</button>'
-      : '<div style="height:36px;margin-top:18px"></div>';
-    return '<div class="wbr-pan-row">'
-      +'<div><label class="wbr-lbl">Nombre</label>'
-        +'<input class="wbr-input" type="text" id="pan-n-'+i+'" value="'+esc(p.nombre)+'" placeholder="Nombre completo"></div>'
-      +'<div><label class="wbr-lbl">Correo</label>'
-        +'<input class="wbr-input" type="email" id="pan-c-'+i+'" value="'+esc(p.correo)+'" placeholder="correo@dominio.com"></div>'
-      +'<div>'+rmBtn+'</div>'
-    +'</div>';
-  }).join("");
-}
-
 // 1. Esta función SOLO se encarga de los inputs y el botón "Eliminar" de cada fila
 function bindPanelistas() {
   st.panelistas.forEach(function(_, i) {
@@ -308,6 +293,25 @@ function bindPanelistas() {
     }
   });
 }
+
+// 2. Función auxiliar para refrescar la vista y re-vincular
+function refreshPanelistas() {
+  document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
+  bindPanelistas();
+}
+
+// 3. Configuración inicial (ESTO VA AFUERA o en un init)
+var addBtn = document.getElementById("wbr-add-pan");
+if (addBtn) {
+  // Este listener se queda aquí, solo se agrega UNA VEZ
+  addBtn.addEventListener("click", function() {
+    st.panelistas.push({ nombre: "", correo: "" });
+    refreshPanelistas();
+  });
+}
+
+// Ejecución inicial
+bindPanelistas();
 
 // 2. Función auxiliar para refrescar la vista y re-vincular
 function refreshPanelistas() {
