@@ -272,7 +272,7 @@ function bindStep2(){
   });
 }
 
-/* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
+
 /* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
 function renderPanelistas(){
   return st.panelistas.map(function(p,i){
@@ -302,12 +302,18 @@ function bindPanelistas(){
       bindPanelistas();
     });
   });
+
+  /* ── CORRECCIÓN: clonar el botón elimina todos los listeners acumulados ── */
   var addBtn = document.getElementById("wbr-add-pan");
-  if(addBtn) addBtn.addEventListener("click", function(){
-    st.panelistas.push({nombre:"",correo:""});
-    document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
-    bindPanelistas();
-  });
+  if(addBtn){
+    var nuevoBtn = addBtn.cloneNode(true);   // copia el nodo sin sus listeners
+    addBtn.parentNode.replaceChild(nuevoBtn, addBtn);
+    nuevoBtn.addEventListener("click", function(){
+      st.panelistas.push({nombre:"", correo:""});
+      document.getElementById("wbr-pan-list").innerHTML = renderPanelistas();
+      bindPanelistas();
+    });
+  }
 }
 
 
