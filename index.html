@@ -84,7 +84,7 @@ body{background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 (function(){
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
-const WEBHOOK_URL = "https://hook.us2.make.com/6cwhkp5grankf75qvz4cb5kl18thwfg4";
+const WEBHOOK_URL = "https://hook.eu1.make.com/TU-URL-AQUI";
 /* ─────────────────────────────────────────────────────────────── */
 
 /* ── ESTADO ───────────────────────────────────────────────────── */
@@ -95,7 +95,15 @@ const st = {
   panelistas: [{nombre:"", correo:""}],
   grabacion:"", grabTipo:"nube",
   dryRun:"", dryRunTipo:"dia",
-  inscripcion:"", aprobacion:"auto",
+  inscripcion:"",
+  camposInscripcion:{
+    apellido:false, segundoApellido:false, unidad:false,
+    departamento_ins:false, direccion:false, ciudad:false,
+    pais:false, codigoPostal:false, estadoProvincia:false,
+    telefono_ins:false, industria:false, organizacion:false,
+    puestoTrabajo:false, comentarios:false
+  },
+  camposPersonalizados:[],
   bannerName:"", solicitud:""
 };
 
@@ -104,7 +112,7 @@ for(let h=7;h<=21;h++){
   HORAS.push(pad(h)+":00");
   if(h<21) HORAS.push(pad(h)+":30");
 }
-const DURS = ["1 hora","1.5 horas","2 horas","2.5 horas","3 horas","3.5 horas","4 horas","4.5 horas","5 horas","5.5 horas","6 horas","Mayor a 6 horas"];
+const DURS = ["1 hora","1.5 horas","2 horas","2.5 horas","3 horas","3.5 horas","4 horas"];
 
 function pad(n){return String(n).padStart(2,"0")}
 function todayStr(){const t=new Date();return t.getFullYear()+"-"+pad(t.getMonth()+1)+"-"+pad(t.getDate())}
@@ -272,7 +280,6 @@ function bindStep2(){
   });
 }
 
-
 /* ── PASO 3 — TÉCNICO ─────────────────────────────────────────── */
 function renderPanelistas(){
   return st.panelistas.map(function(p,i){
@@ -302,11 +309,10 @@ function bindPanelistas(){
       bindPanelistas();
     });
   });
-
-  /* ── CORRECCIÓN: clonar el botón elimina todos los listeners acumulados ── */
+  /* cloneNode elimina listeners acumulados — evita el bug exponencial */
   var addBtn = document.getElementById("wbr-add-pan");
   if(addBtn){
-    var nuevoBtn = addBtn.cloneNode(true);   // copia el nodo sin sus listeners
+    var nuevoBtn = addBtn.cloneNode(true);
     addBtn.parentNode.replaceChild(nuevoBtn, addBtn);
     nuevoBtn.addEventListener("click", function(){
       st.panelistas.push({nombre:"", correo:""});
@@ -315,7 +321,6 @@ function bindPanelistas(){
     });
   }
 }
-
 
 function renderStep3(){
   var grabCond = st.grabacion==="si"
@@ -328,7 +333,7 @@ function renderStep3(){
   var dryCond = st.dryRun==="si"
     ? '<div class="wbr-cond">'
         +'<label class="wbr-lbl">¿Cuándo realizar la prueba?</label>'
-        +'<label class="wbr-opt'+(st.dryRunTipo==="dia"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="dia"'+(st.dryRunTipo==="dia"?" checked":"")+'>  Un día antes (horario por confirmar)</label>'
+        +'<label class="wbr-opt'+(st.dryRunTipo==="dia"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="dia"'+(st.dryRunTipo==="dia"?" checked":"")+'>  Un día antes del evento (30 min)</label>'
         +'<label class="wbr-opt'+(st.dryRunTipo==="15min"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="15min"'+(st.dryRunTipo==="15min"?" checked":"")+'>  15 minutos antes del evento</label>'
       +'</div>' : "";
 
@@ -347,7 +352,7 @@ function renderStep3(){
       +grabCond
     +'</div>'
     +'<div class="wbr-fld">'
-      +'<label class="wbr-lbl wbr-req">¿Sesión de prueba?</label>'
+      +'<label class="wbr-lbl wbr-req">¿Sesión de prueba (Dry Run)?</label>'
       +'<p class="wbr-tip" style="margin-bottom:8px">Prueba de audio/video con el administrador antes del evento.</p>'
       +'<label class="wbr-opt'+(st.dryRun==="si"?" on":"")+'"><input type="radio" name="wbr-dry" value="si"'+(st.dryRun==="si"?" checked":"")+'>  Sí, requiero sesión de prueba</label>'
       +'<label class="wbr-opt'+(st.dryRun==="no"?" on":"")+'"><input type="radio" name="wbr-dry" value="no"'+(st.dryRun==="no"?" checked":"")+'>  No es necesario</label>'
@@ -385,20 +390,73 @@ function bindStep3(){
 }
 
 /* ── PASO 4 — INSCRIPCIÓN ─────────────────────────────────────── */
+/* Catálogo de campos opcionales de inscripción */
+var CAMPOS_OPT = [
+  {key:"apellido",        lbl:"Apellido"},
+  {key:"segundoApellido", lbl:"Segundo apellido"},
+  {key:"unidad",          lbl:"Unidad"},
+  {key:"departamento_ins",lbl:"Departamento"},
+  {key:"direccion",       lbl:"Dirección"},
+  {key:"ciudad",          lbl:"Ciudad"},
+  {key:"pais",            lbl:"País / Región"},
+  {key:"codigoPostal",    lbl:"Código postal"},
+  {key:"estadoProvincia", lbl:"Estado / Provincia"},
+  {key:"telefono_ins",    lbl:"Teléfono"},
+  {key:"industria",       lbl:"Industria"},
+  {key:"organizacion",    lbl:"Organización"},
+  {key:"puestoTrabajo",   lbl:"Puesto de trabajo"},
+  {key:"comentarios",     lbl:"Preguntas y comentarios"}
+];
+
+function renderCamposPersonalizados(){
+  return st.camposPersonalizados.map(function(c,i){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+      +'<input class="wbr-input" type="text" id="campo-p-'+i+'" value="'+esc(c)+'" placeholder="Nombre del campo" style="flex:1">'
+      +'<button class="wbr-btn-sm" id="campo-rm-'+i+'" style="color:#ef4444;flex-shrink:0">&#x2715;</button>'
+    +'</div>';
+  }).join("");
+}
+
 function renderStep4(){
+  var checkboxes = CAMPOS_OPT.map(function(f){
+    var checked = st.camposInscripcion[f.key] ? ' checked' : '';
+    return '<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;border:.5px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:13px;color:#374151;margin-bottom:5px;'+(st.camposInscripcion[f.key]?'background:rgba(14,114,237,.05);border-color:#0E72ED;color:#1d4ed8':'')+'">'
+      +'<input type="checkbox" data-campo="'+f.key+'"'+checked+' style="accent-color:#0E72ED;width:15px;height:15px;flex-shrink:0"> '+f.lbl
+    +'</label>';
+  }).join("");
+
   return '<div class="wbr-info">Esta sección aplica porque solicitaste <strong>inscripción con registro</strong>.</div>'
+
+  /* Campos requeridos */
   +'<div class="wbr-card">'
-    +'<div class="wbr-secttl">Tipo de aprobación</div>'
-    +'<div class="wbr-fld">'
-      +'<label class="wbr-opt'+(st.aprobacion==="auto"?" on":"")+'"><input type="radio" name="wbr-apr" value="auto"'+(st.aprobacion==="auto"?" checked":"")+'>  Automática — aprobación inmediata al registrarse</label>'
-      +'<label class="wbr-opt'+(st.aprobacion==="manual"?" on":"")+'"><input type="radio" name="wbr-apr" value="manual"'+(st.aprobacion==="manual"?" checked":"")+'>  Manual — el anfitrión aprueba cada solicitud</label>'
-      +'<label class="wbr-opt'+(st.aprobacion==="cerrado"?" on":"")+'"><input type="radio" name="wbr-apr" value="cerrado"'+(st.aprobacion==="cerrado"?" checked":"")+'>  Cerrada — solo invitados directos</label>'
-    +'</div>'
+    +'<div class="wbr-secttl">Campos de inscripción requeridos</div>'
+    +'<p class="wbr-tip" style="margin-bottom:10px">Estos campos siempre son obligatorios en el formulario de registro.</p>'
+    +'<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:#f0fdf4;border:.5px solid #6ee7b7;border-radius:8px;font-size:13px;color:#065f46;margin-bottom:5px">'
+      +'<input type="checkbox" checked disabled style="width:15px;height:15px;flex-shrink:0"> Nombre</label>'
+    +'<label style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:#f0fdf4;border:.5px solid #6ee7b7;border-radius:8px;font-size:13px;color:#065f46">'
+      +'<input type="checkbox" checked disabled style="width:15px;height:15px;flex-shrink:0"> Correo electrónico</label>'
   +'</div>'
+
+  /* Campos opcionales */
+  +'<div class="wbr-card">'
+    +'<div class="wbr-secttl">Campos adicionales opcionales</div>'
+    +'<p class="wbr-tip" style="margin-bottom:10px">Selecciona los campos que deseas incluir en el formulario de registro.</p>'
+    +checkboxes
+  +'</div>'
+
+  /* Campos personalizados */
+  +'<div class="wbr-card">'
+    +'<div class="wbr-secttl">Campos personalizados</div>'
+    +'<p class="wbr-tip" style="margin-bottom:10px">Agrega campos que no estén en la lista anterior.</p>'
+    +'<div id="campos-custom-list">'+renderCamposPersonalizados()+'</div>'
+    +'<button class="wbr-btn-sm" id="campo-add-btn" style="margin-top:4px">+ Agregar campo</button>'
+  +'</div>'
+
+  /* Banner */
   +'<div class="wbr-card">'
     +'<div class="wbr-secttl">Banner / Imagen del webinar</div>'
     +'<p class="wbr-tip" style="margin-bottom:10px">Imagen para la página de inscripción. Recomendado: 1280×720 px (JPG, PNG).</p>'
-    +'<div class="wbr-drop'+(st.bannerName?" ok":"") +'" id="wbr-drop">'
+    +'<div class="wbr-drop'+(st.bannerName?" ok":"")+'" id="wbr-drop">'
       +'<input type="file" id="wbr-file" accept="image/*,.pdf,.ppt,.pptx" style="display:none">'
       +(st.bannerName
         ? '<div style="font-size:20px;margin-bottom:4px">&#10003;</div><strong>'+esc(st.bannerName)+'</strong><div style="font-size:11px;margin-top:4px">Clic para cambiar</div>'
@@ -408,18 +466,109 @@ function renderStep4(){
 }
 
 function bindStep4(){
-  document.querySelectorAll('input[name="wbr-apr"]').forEach(function(r){
-    r.addEventListener("change", function(){ setSt("aprobacion", this.value); });
+  /* ── Checkboxes campos opcionales ── */
+  document.querySelectorAll('input[data-campo]').forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var k = this.getAttribute("data-campo");
+      st.camposInscripcion[k] = this.checked;
+      /* Actualizar estilo visual sin re-render completo */
+      var lbl = this.closest("label");
+      if(lbl){
+        if(this.checked){
+          lbl.style.background="rgba(14,114,237,.05)";
+          lbl.style.borderColor="#0E72ED";
+          lbl.style.color="#1d4ed8";
+        } else {
+          lbl.style.background="";
+          lbl.style.borderColor="#e5e7eb";
+          lbl.style.color="#374151";
+        }
+      }
+    });
   });
-  var drop = document.getElementById("wbr-drop");
+
+  /* ── Campos personalizados ── */
+  function bindCamposCustom(){
+    st.camposPersonalizados.forEach(function(_,i){
+      var inp = document.getElementById("campo-p-"+i);
+      var rm  = document.getElementById("campo-rm-"+i);
+      if(inp) inp.addEventListener("input", function(){ st.camposPersonalizados[i]=this.value; });
+      if(rm){
+        var rmC = rm.cloneNode(true);
+        rm.parentNode.replaceChild(rmC, rm);
+        rmC.addEventListener("click", function(){
+          st.camposPersonalizados.splice(i,1);
+          document.getElementById("campos-custom-list").innerHTML = renderCamposPersonalizados();
+          bindCamposCustom();
+        });
+      }
+    });
+    var addC = document.getElementById("campo-add-btn");
+    if(addC){
+      var addCN = addC.cloneNode(true);
+      addC.parentNode.replaceChild(addCN, addC);
+      addCN.addEventListener("click", function(){
+        st.camposPersonalizados.push("");
+        document.getElementById("campos-custom-list").innerHTML = renderCamposPersonalizados();
+        bindCamposCustom();
+        /* Foco en el nuevo campo */
+        var last = document.getElementById("campo-p-"+(st.camposPersonalizados.length-1));
+        if(last) last.focus();
+      });
+    }
+  }
+  bindCamposCustom();
+
+  /* ── Banner: clic + drag-and-drop corregido ── */
+  var drop   = document.getElementById("wbr-drop");
   var fileIn = document.getElementById("wbr-file");
-  if(drop) drop.addEventListener("click", function(){ if(fileIn) fileIn.click(); });
-  if(fileIn) fileIn.addEventListener("change", function(){
-    if(this.files && this.files[0]){ st.bannerName=this.files[0].name; render(); }
-  });
+
+  function applyFile(file){
+    if(!file) return;
+    st.bannerName = file.name;
+    render();
+  }
+
+  if(drop){
+    /* Clic para abrir selector */
+    drop.addEventListener("click", function(e){
+      if(e.target !== fileIn && fileIn) fileIn.click();
+    });
+    /* Drag over — necesario para habilitar drop */
+    drop.addEventListener("dragover", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      drop.style.background = "#eff6ff";
+      drop.style.borderColor = "#0E72ED";
+    });
+    drop.addEventListener("dragleave", function(e){
+      e.preventDefault();
+      drop.style.background = "";
+      drop.style.borderColor = "";
+    });
+    /* Drop real del archivo */
+    drop.addEventListener("drop", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var files = e.dataTransfer && e.dataTransfer.files;
+      if(files && files[0]) applyFile(files[0]);
+    });
+  }
+  if(fileIn){
+    fileIn.addEventListener("change", function(){
+      if(this.files && this.files[0]) applyFile(this.files[0]);
+    });
+  }
 }
 
 /* ── PASO 5 — REVISIÓN ────────────────────────────────────────── */
+function camposActivosTexto(){
+  var activos = CAMPOS_OPT.filter(function(f){ return st.camposInscripcion[f.key]; })
+                           .map(function(f){ return f.lbl; });
+  var custom  = st.camposPersonalizados.filter(Boolean);
+  return ["Nombre","Correo electrónico"].concat(activos).concat(custom).join(", ");
+}
+
 function buildEmailBody(fecha, folio){
   var pans = st.panelistas.filter(function(p){return p.correo;})
                           .map(function(p){return p.correo;}).join(", ") || "Ninguno";
@@ -430,7 +579,8 @@ function buildEmailBody(fecha, folio){
     +"DATOS DEL EVENTO:\n"
     +"* Tema: "+st.tema+"\n"
     +"* Fecha y Hora: "+fecha+" a las "+st.hora+" ("+st.duracion+")\n"
-    +"* Inscripción: "+(st.inscripcion==="si"?"Sí - "+st.aprobacion : st.inscripcion==="no"?"No":"—")+"\n"
+    +"* Inscripción: "+(st.inscripcion==="si"?"Sí" : st.inscripcion==="no"?"No":"—")+"\n"
+    +(st.inscripcion==="si" ? "* Campos de registro: "+camposActivosTexto()+"\n" : "")
     +"* Panelistas: "+pans+"\n\n"
     +"NOTAS TÉCNICAS:\n"
     +"* Requiere grabación: "+(st.grabacion==="si"?"Sí ("+st.grabTipo+")" : st.grabacion==="no"?"No":"—")+"\n"
@@ -456,7 +606,8 @@ function renderStep5(){
     +'<div class="wbr-rev-row"><div class="wbr-rev-lbl">Fecha y hora</div><div class="wbr-rev-val">'+fecha+' &middot; '+st.hora+' &middot; '+st.duracion+'</div></div>'
     +'<div class="wbr-rev-row"><div class="wbr-rev-lbl">Grabación</div><div class="wbr-rev-val">'+(st.grabacion==="si"?"Sí ("+st.grabTipo+")" : "No")+'</div></div>'
     +'<div class="wbr-rev-row"><div class="wbr-rev-lbl">Sesión de prueba</div><div class="wbr-rev-val">'+(st.dryRun==="si"?"Sí ("+(st.dryRunTipo==="dia"?"día anterior":"15 min antes")+")" : "No")+'</div></div>'
-    +'<div class="wbr-rev-row"><div class="wbr-rev-lbl">Inscripción</div><div class="wbr-rev-val">'+(st.inscripcion==="si"?"Sí ("+st.aprobacion+")" : "No")+'</div></div>'
+    +'<div class="wbr-rev-row"><div class="wbr-rev-lbl">Inscripción</div><div class="wbr-rev-val">'+(st.inscripcion==="si"?"Sí":"No")+'</div></div>'
+    +(st.inscripcion==="si" ? '<div class="wbr-rev-row"><div class="wbr-rev-lbl">Campos de registro</div><div class="wbr-rev-val">'+esc(camposActivosTexto())+'</div></div>' : "")
     +(pans.length ? '<div class="wbr-rev-row"><div class="wbr-rev-lbl">Panelistas</div><div class="wbr-rev-val">'+pans.map(function(p){return p.correo;}).join(", ")+'</div></div>' : "")
     +(st.bannerName ? '<div class="wbr-rev-row"><div class="wbr-rev-lbl">Banner</div><div class="wbr-rev-val">'+esc(st.bannerName)+'</div></div>' : "")
   +'</div>'
@@ -495,7 +646,7 @@ function bindEnviar(){
       dryRun:           st.dryRun,
       dryRunTipo:       st.dryRun==="si" ? st.dryRunTipo : "",
       inscripcion:      st.inscripcion,
-      aprobacion:       st.inscripcion==="si" ? st.aprobacion : "",
+      campos_registro:  st.inscripcion==="si" ? camposActivosTexto() : "",
       bannerNombre:     st.bannerName || "",
       solicitud:        st.solicitud  || "",
       panelistas:       pans,
@@ -551,7 +702,7 @@ function render(){
     document.getElementById("wbr-nav").innerHTML     = "";
     var rb = document.getElementById("wbr-reset-btn");
     if(rb) rb.addEventListener("click", function(){
-      Object.assign(st,{step:1,submitted:false,nombre:"",economico:"",departamento:"",correo:"",correoConfirm:"",telefono:"",tema:"",descripcion:"",fecha:"",hora:"",duracion:"",panelistas:[{nombre:"",correo:""}],grabacion:"",grabTipo:"nube",dryRun:"",dryRunTipo:"dia",inscripcion:"",aprobacion:"auto",bannerName:"",solicitud:""});
+      Object.assign(st,{step:1,submitted:false,nombre:"",economico:"",departamento:"",correo:"",correoConfirm:"",telefono:"",tema:"",descripcion:"",fecha:"",hora:"",duracion:"",panelistas:[{nombre:"",correo:""}],grabacion:"",grabTipo:"nube",dryRun:"",dryRunTipo:"dia",inscripcion:"",camposInscripcion:{apellido:false,segundoApellido:false,unidad:false,departamento_ins:false,direccion:false,ciudad:false,pais:false,codigoPostal:false,estadoProvincia:false,telefono_ins:false,industria:false,organizacion:false,puestoTrabajo:false,comentarios:false},camposPersonalizados:[],bannerName:"",solicitud:""});
       render();
     });
     return;
