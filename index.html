@@ -333,7 +333,7 @@ function renderStep3(){
   var dryCond = st.dryRun==="si"
     ? '<div class="wbr-cond">'
         +'<label class="wbr-lbl">¿Cuándo realizar la prueba?</label>'
-        +'<label class="wbr-opt'+(st.dryRunTipo==="dia"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="dia"'+(st.dryRunTipo==="dia"?" checked":"")+'>  Un día antes del evento (30 min)</label>'
+        +'<label class="wbr-opt'+(st.dryRunTipo==="dia"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="dia"'+(st.dryRunTipo==="dia"?" checked":"")+'>  Un día antes del evento (horario por confirmar)</label>'
         +'<label class="wbr-opt'+(st.dryRunTipo==="15min"?" on":"")+'"><input type="radio" name="wbr-drtipo" value="15min"'+(st.dryRunTipo==="15min"?" checked":"")+'>  15 minutos antes del evento</label>'
       +'</div>' : "";
 
@@ -352,7 +352,7 @@ function renderStep3(){
       +grabCond
     +'</div>'
     +'<div class="wbr-fld">'
-      +'<label class="wbr-lbl wbr-req">¿Sesión de prueba (Dry Run)?</label>'
+      +'<label class="wbr-lbl wbr-req">¿Sesión de prueba?</label>'
       +'<p class="wbr-tip" style="margin-bottom:8px">Prueba de audio/video con el administrador antes del evento.</p>'
       +'<label class="wbr-opt'+(st.dryRun==="si"?" on":"")+'"><input type="radio" name="wbr-dry" value="si"'+(st.dryRun==="si"?" checked":"")+'>  Sí, requiero sesión de prueba</label>'
       +'<label class="wbr-opt'+(st.dryRun==="no"?" on":"")+'"><input type="radio" name="wbr-dry" value="no"'+(st.dryRun==="no"?" checked":"")+'>  No es necesario</label>'
@@ -393,7 +393,6 @@ function bindStep3(){
 /* Catálogo de campos opcionales de inscripción */
 var CAMPOS_OPT = [
   {key:"apellido",        lbl:"Apellido"},
-  {key:"segundoApellido", lbl:"Segundo apellido"},
   {key:"unidad",          lbl:"Unidad"},
   {key:"departamento_ins",lbl:"Departamento"},
   {key:"direccion",       lbl:"Dirección"},
